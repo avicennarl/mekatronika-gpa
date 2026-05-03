@@ -266,7 +266,13 @@ export default function Page() {
 }
 
 /* COMPONENT */
-const CourseCard = ({ c, grades, setGrades }) => {
+type CourseCardProps = {
+  c: Course;
+  grades: Record<string, string>;
+  setGrades: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+};
+
+const CourseCard = ({ c, grades, setGrades }: CourseCardProps) => {
   const grade = grades[c.id];
   const nilai = grade ? gradeMap[grade] : null;
 
