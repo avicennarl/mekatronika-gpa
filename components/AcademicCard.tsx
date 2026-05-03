@@ -48,6 +48,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const [downloading, setDownloading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const calcIPS = (sem: number) => {
     const semCourses = courses.filter(c => c.semester === sem);
@@ -84,17 +85,25 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     ? name.trim().split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase()
     : '?';
 
+  const renderCardCanvas = async () => {
+    if (!cardRef.current) return null;
+    const { default: html2canvas } = await import('html2canvas');
+    return html2canvas(cardRef.current, {
+      scale: 3,
+      backgroundColor: null,
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0,
+    });
+  };
+
   const downloadCard = async () => {
     if (!cardRef.current) return;
     setDownloading(true);
+    setIsCapturing(true);
     try {
-      const { default: html2canvas } = await import('html2canvas');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const canvas = await (html2canvas as any)(cardRef.current, {
-        scale: 3,
-        backgroundColor: null,
-        useCORS: true,
-      });
+      const canvas = await renderCardCanvas();
+      if (!canvas) return;
       const a = document.createElement('a');
       a.download = 'mekatronika-akademik-card.png';
       a.href = canvas.toDataURL('image/png');
@@ -102,7 +111,34 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     } catch (e) {
       console.error(e);
     } finally {
+      setIsCapturing(false);
       setDownloading(false);
+    }
+  };
+
+  const shareImage = async () => {
+    if (!navigator.share || !cardRef.current) return false;
+    try {
+      setIsCapturing(true);
+      const canvas = await renderCardCanvas();
+      if (!canvas) return false;
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) return false;
+      const file = new File([blob], 'kartu-akademik-mekatronika.png', { type: 'image/png' });
+      const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
+      const canShareFile = nav.canShare?.({ files: [file] }) ?? false;
+      if (!canShareFile) return false;
+      await navigator.share({
+        files: [file],
+        title: 'Kartu Akademik Mekatronika',
+        text: `IPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}`,
+      });
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    } finally {
+      setIsCapturing(false);
     }
   };
 
@@ -126,6 +162,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   };
 
   const shareWhatsApp = () => {
+    shareImage();
     const text = encodeURIComponent(
       `📊 Kartu Akademik Mekatronika\n${name ? `${name} ` : ''}${nim ? `(${nim})` : ''}\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys`
     );
@@ -133,6 +170,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   };
 
   const shareTwitter = () => {
+    shareImage();
     const text = encodeURIComponent(
       `Kartu Akademik Mekatronika 📊\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys #PolmanBandung`
     );
@@ -263,9 +301,11 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
                   <div style={{
                     fontWeight: 800, fontSize: 28,
-                    background: 'linear-gradient(135deg, #4D96FF, #C77DFF)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
+                    color: isCapturing ? '#8EA8FF' : 'transparent',
+                    background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
+                    WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
+                    WebkitTextFillColor: isCapturing ? '#8EA8FF' : 'transparent',
+                    backgroundClip: isCapturing ? 'border-box' : 'text',
                   }}>
                     {ipk !== null ? ipk.toFixed(3) : '–'}
                   </div>
