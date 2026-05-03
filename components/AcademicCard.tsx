@@ -178,6 +178,11 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
 
+
+  const captureTypographyFix = isCapturing
+    ? { lineHeight: 1.2, paddingTop: 2 }
+    : undefined;
+
   return (
     <>
       {/* Trigger button */}
@@ -282,26 +287,26 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
               <div style={{ position: 'absolute', bottom: -40, left: -40, width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(77,150,255,0.2), transparent 70%)', pointerEvents: 'none' }} />
 
               {/* Top row: avatar + name + IPK */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: isCapturing ? 'flex-start' : 'center', gap: 14, marginBottom: 20 }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 800, fontSize: 18, color: '#fff', flexShrink: 0,
+                  fontWeight: 800, fontSize: 18, lineHeight: 1, color: '#fff', flexShrink: 0,
                 }}>
                   {initials}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2, paddingTop: isCapturing ? 3 : 0 }}>
                     {name || 'Nama Mahasiswa'}
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{prodi}</div>
-                  {nim && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>NIM: {nim}</div>}
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2, ...(captureTypographyFix || {}) }}>{prodi}</div>
+                  {nim && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 1, ...(captureTypographyFix || {}) }}>NIM: {nim}</div>}
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', ...(captureTypographyFix || {}) }}>IPK</div>
                   <div style={{
-                    fontWeight: 800, fontSize: 28,
+                    fontWeight: 800, fontSize: 28, lineHeight: 1.1,
                     color: isCapturing ? '#8EA8FF' : 'transparent',
                     background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                     WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
@@ -311,7 +316,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                     {ipk !== null ? ipk.toFixed(3) : '–'}
                   </div>
                   {predi && (
-                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, background: predi.bg, color: predi.color, marginTop: 2 }}>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, lineHeight: 1.2, background: predi.bg, color: predi.color, marginTop: isCapturing ? 4 : 2 }}>
                       {predi.label}
                     </span>
                   )}
