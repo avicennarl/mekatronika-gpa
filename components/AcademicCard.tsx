@@ -95,7 +95,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     captureHost.style.position = 'fixed';
     captureHost.style.left = '-10000px';
     captureHost.style.top = '0';
-    captureHost.style.padding = '20px 0 24px';
+    captureHost.style.padding = '0';
     captureHost.style.background = 'transparent';
     captureHost.style.width = `${sourceNode.offsetWidth}px`;
     captureHost.style.boxSizing = 'content-box';
@@ -315,7 +315,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   {initials}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2, paddingTop: isCapturing ? 2 : 0 }}>
                     {name || 'Nama Mahasiswa'}
                   </div>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{prodi}</div>
