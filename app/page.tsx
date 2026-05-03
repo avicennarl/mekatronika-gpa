@@ -241,8 +241,11 @@ export default function Page() {
               </div>
             );
           })}
+          
         </div>
+        
       </div>
+      
 
       {/* IPK */}
       <div style={{
@@ -261,8 +264,41 @@ export default function Page() {
           {calculateIPK().toFixed(3)}
         </div>
       </div>
+      <footer
+  style={{
+    marginTop: 50,
+    paddingTop: 20,
+    borderTop: "1px solid #e5e7eb",
+    display: "flex",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    fontSize: 12,
+    color: "#6b7280"
+  }}
+>
+  <div>
+    © {new Date().getFullYear()} Mekatronika GPA AE22 Polman Bandung
+  </div>
+
+  <div style={{ display: "flex", gap: 12 }}>
+    <a
+      href="https://mekatronika-gpa.vercel.app/"
+      target="_blank"
+    >
+      Live Demo
+    </a>
+
+    <a
+      href="https://github.com/avicennarl/mekatronika-gpa"
+      target="_blank"
+    >
+      GitHub
+    </a>
+  </div>
+</footer>
     </div>
   );
+  
 }
 
 /* COMPONENT */
@@ -331,3 +367,36 @@ const CourseCard = ({ c, grades, setGrades }: CourseCardProps) => {
     </div>
   );
 };
+
+<footer
+  style={{
+    marginTop: 50,
+    paddingTop: 20,
+    borderTop: "1px solid #e5e7eb",
+    display: "flex",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    fontSize: 12,
+    color: "#6b7280"
+  }}
+>
+  <div>
+    © {new Date().getFullYear()} Mekatronika GPA
+  </div>
+
+  <div style={{ display: "flex", gap: 12 }}>
+    <a
+      href="https://mekatronika-gpa.vercel.app/"
+      target="_blank"
+    >
+      Live Demo
+    </a>
+
+    <a
+      href="https://github.com/avicennarl/mekatronika-gpa"
+      target="_blank"
+    >
+      GitHub
+    </a>
+  </div>
+</footer>
