@@ -190,10 +190,17 @@ Data digunakan sebagai representasi struktur mata kuliah untuk keperluan simulas
 Repository ini bersifat **private** dan digunakan untuk pengembangan internal.
 
 ---
+### IPS (Indeks Prestasi Semester)
 
-## 👨‍💻 Kontributor
+\[
+IPS = \frac{\sum (N_i \times SKS_i)}{\sum SKS_i}
+\]
 
-* Avicenna Ari Sumirat
+### IPK (Indeks Prestasi Kumulatif)
+
+\[
+IPK = \frac{\sum (N_i \times SKS_i)}{\sum SKS_i}
+\]
 
 ---
 
