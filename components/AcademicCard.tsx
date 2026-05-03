@@ -88,6 +88,24 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const renderCardCanvas = async () => {
     if (!cardRef.current) return null;
     const { default: html2canvas } = await import('html2canvas');
+    const sourceNode = cardRef.current;
+    const captureHost = document.createElement('div');
+    const captureClone = sourceNode.cloneNode(true) as HTMLDivElement;
+
+    captureHost.style.position = 'fixed';
+    captureHost.style.left = '-10000px';
+    captureHost.style.top = '0';
+    captureHost.style.padding = '20px 0 24px';
+    captureHost.style.background = 'transparent';
+    captureHost.style.width = `${sourceNode.offsetWidth}px`;
+    captureHost.style.boxSizing = 'content-box';
+
+    captureClone.style.margin = '0';
+    captureClone.style.width = '100%';
+    captureClone.style.boxSizing = 'border-box';
+    captureHost.appendChild(captureClone);
+    document.body.appendChild(captureHost);
+
     const captureOptions = {
       scale: 3,
       backgroundColor: null,
@@ -95,7 +113,11 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
       scrollX: 0,
       scrollY: 0,
     } as unknown as Parameters<typeof html2canvas>[1];
-    return html2canvas(cardRef.current, captureOptions);
+    try {
+      return await html2canvas(captureHost, captureOptions);
+    } finally {
+      document.body.removeChild(captureHost);
+    }
   };
 
   const downloadCard = async () => {
