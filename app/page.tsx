@@ -1,65 +1,145 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+
+type Course = {
+  id: string;
+  semester: number;
+  nama: string;
+  sks: number;
+  type: "TEORI" | "PRAKTIK";
+};
+
+const gradeMap: Record<string, number> = {
+  A: 4.0,
+  AB: 3.5,
+  B: 3.0,
+  BC: 2.5,
+  C: 2.0,
+  CD: 1.5,
+  D: 1.0,
+  E: 0.0,
+};
+
+export default function Page() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [grades, setGrades] = useState<Record<string, string>>({});
+  const [useSKS, setUseSKS] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/courses')
+      .then(res => res.json())
+      .then(data => setCourses(data));
+  }, []);
+
+  // Group per semester
+  const grouped = courses.reduce((acc, course) => {
+    if (!acc[course.semester]) acc[course.semester] = [];
+    acc[course.semester].push(course);
+    return acc;
+  }, {} as Record<number, Course[]>);
+
+  // Hitung IPS
+  const calculateIPS = (list: Course[]) => {
+    let total = 0;
+    let divisor = 0;
+
+    list.forEach(c => {
+      const grade = grades[c.id];
+      if (!grade) return;
+
+      const value = gradeMap[grade];
+      const weight = useSKS ? c.sks : 1;
+
+      total += value * weight;
+      divisor += weight;
+    });
+
+    return divisor === 0 ? 0 : total / divisor;
+  };
+
+  // Hitung IPK
+  const calculateIPK = () => {
+    let total = 0;
+    let divisor = 0;
+
+    courses.forEach(c => {
+      const grade = grades[c.id];
+      if (!grade) return;
+
+      const value = gradeMap[grade];
+      const weight = useSKS ? c.sks : 1;
+
+      total += value * weight;
+      divisor += weight;
+    });
+
+    return divisor === 0 ? 0 : total / divisor;
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div style={{ padding: 20 }}>
+      <h1>Kalkulator IPK Mekatronika</h1>
+
+      {/* Toggle */}
+      <label>
+        <input
+          type="checkbox"
+          checked={useSKS}
+          onChange={() => setUseSKS(!useSKS)}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+        Gunakan Bobot SKS
+      </label>
+
+      {/* Render Semester */}
+      {Object.entries(grouped).map(([semester, list]) => (
+        <div key={semester} style={{ marginTop: 20 }}>
+          <h2>Semester {semester}</h2>
+
+          <table border={1} cellPadding={5}>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>SKS</th>
+                <th>Nilai</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map(c => (
+                <tr key={c.id}>
+                  <td>{c.nama}</td>
+                  <td>{c.sks}</td>
+                  <td>
+                    <select
+  value={grades[c.id] || ''}
+  onChange={(e) =>
+    setGrades({
+      ...grades,
+      [c.id]: e.target.value,
+    })
+  }
+>
+  <option value="">-</option>
+  {["A","AB","B","BC","C","CD","D","E"].map(g => (
+    <option key={g} value={g}>{g}</option>
+  ))}
+</select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <p>
+            IPS: <strong>{calculateIPS(list).toFixed(3)}</strong>
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      ))}
+
+      {/* IPK */}
+      <h2 style={{ marginTop: 30 }}>
+        IPK: {calculateIPK().toFixed(3)}
+      </h2>
     </div>
   );
 }
