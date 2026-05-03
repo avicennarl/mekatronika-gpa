@@ -50,14 +50,6 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
-  const waitForCaptureLayout = async () => {
-    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    if (document.fonts?.ready) {
-      await document.fonts.ready;
-    }
-  };
-
   const calcIPS = (sem: number) => {
     const semCourses = courses.filter(c => c.semester === sem);
     let total = 0, div = 0;
@@ -96,36 +88,15 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const renderCardCanvas = async () => {
     if (!cardRef.current) return null;
     const { default: html2canvas } = await import('html2canvas');
-    const sourceNode = cardRef.current;
-    const captureHost = document.createElement('div');
-    const captureClone = sourceNode.cloneNode(true) as HTMLDivElement;
 
-    captureHost.style.position = 'fixed';
-    captureHost.style.left = '-10000px';
-    captureHost.style.top = '0';
-    captureHost.style.padding = '0';
-    captureHost.style.background = 'transparent';
-    captureHost.style.width = `${sourceNode.offsetWidth}px`;
-    captureHost.style.boxSizing = 'content-box';
-
-    captureClone.style.margin = '0';
-    captureClone.style.width = '100%';
-    captureClone.style.boxSizing = 'border-box';
-    captureHost.appendChild(captureClone);
-    document.body.appendChild(captureHost);
-
-    const captureOptions = {
+    return html2canvas(cardRef.current, {
       scale: 3,
       backgroundColor: null,
       useCORS: true,
       scrollX: 0,
       scrollY: 0,
-    } as unknown as Parameters<typeof html2canvas>[1];
-    try {
-      return await html2canvas(captureHost, captureOptions);
-    } finally {
-      document.body.removeChild(captureHost);
-    }
+    });
+
   };
 
   const downloadCard = async () => {
@@ -133,7 +104,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     setDownloading(true);
     setIsCapturing(true);
     try {
-      await waitForCaptureLayout();
+
       const canvas = await renderCardCanvas();
       if (!canvas) return;
       const a = document.createElement('a');
@@ -152,7 +123,6 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     if (!navigator.share || !cardRef.current) return false;
     try {
       setIsCapturing(true);
-      await waitForCaptureLayout();
       const canvas = await renderCardCanvas();
       if (!canvas) return false;
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -338,7 +308,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
                   <div style={{
-                    fontWeight: 800, fontSize: 28, lineHeight: isCapturing ? 1.18 : 1.1, ...(captureFontStyle || {}),
+                    fontWeight: 800, fontSize: 28,
                     color: isCapturing ? '#8EA8FF' : 'transparent',
                     background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                     WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
