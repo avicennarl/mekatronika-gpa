@@ -13,8 +13,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mekatronika GPA",
-  description: "Kalkulator IPS & IPK Mekatronika",
+  title: "Mekatronika GPA — Kalkulator IPK Mahasiswa",
+  description:
+    "Aplikasi kalkulator IPS & IPK untuk mahasiswa Mekatronika dengan fitur dashboard interaktif, rekap semester, dan visualisasi nilai.",
+  keywords: [
+    "IPK calculator",
+    "IPS calculator",
+    "Mekatronika",
+    "GPA calculator",
+    "Next.js project"
+  ],
+  authors: [{ name: "222442006-avicennarls" }],
 };
 
 export default function RootLayout({
