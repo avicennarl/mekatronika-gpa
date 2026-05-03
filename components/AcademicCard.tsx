@@ -89,7 +89,8 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     setDownloading(true);
     try {
       const { default: html2canvas } = await import('html2canvas');
-      const canvas = await html2canvas(cardRef.current, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const canvas = await (html2canvas as any)(cardRef.current, {
         scale: 3,
         backgroundColor: null,
         useCORS: true,
