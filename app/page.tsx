@@ -21,11 +21,35 @@ const colors = [
   "#ff9f43","#4d96ff","#00b894","#ff6b9d"
 ];
 
+const STORAGE_KEYS = {
+  grades: 'mekatronika_gpa_grades_v1',
+  useSKS: 'mekatronika_gpa_use_sks_v1',
+  activeSem: 'mekatronika_gpa_active_sem_v1',
+};
+
 export default function Page() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [grades, setGrades] = useState<Record<string, string>>({});
-  const [activeSem, setActiveSem] = useState(1);
-  const [useSKS, setUseSKS] = useState(true);
+  const [grades, setGrades] = useState<Record<string, string>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.grades);
+      if (!saved) return {};
+      const parsed = JSON.parse(saved) as Record<string, string>;
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  });
+  const [activeSem, setActiveSem] = useState(() => {
+    if (typeof window === 'undefined') return 1;
+    const saved = Number(localStorage.getItem(STORAGE_KEYS.activeSem));
+    return Number.isInteger(saved) && saved >= 1 && saved <= 8 ? saved : 1;
+  });
+  const [useSKS, setUseSKS] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem(STORAGE_KEYS.useSKS);
+    return saved === null ? true : saved === 'true';
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -44,6 +68,32 @@ export default function Page() {
         setLoading(false);
       });
   }, []);
+
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.grades, JSON.stringify(grades));
+    } catch {
+      // ignore storage quota / privacy mode errors
+    }
+  }, [grades]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.useSKS, String(useSKS));
+    } catch {
+      // ignore storage quota / privacy mode errors
+    }
+  }, [useSKS]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.activeSem, String(activeSem));
+    } catch {
+      // ignore storage quota / privacy mode errors
+    }
+  }, [activeSem]);
+
 
   const grouped = useMemo(() => {
     const acc: Record<number, Course[]> = {};
