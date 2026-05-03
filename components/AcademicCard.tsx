@@ -50,6 +50,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
+
   const waitForCaptureLayout = async () => {
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
@@ -57,6 +58,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
       await document.fonts.ready;
     }
   };
+
 
   const calcIPS = (sem: number) => {
     const semCourses = courses.filter(c => c.semester === sem);
@@ -115,6 +117,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     document.body.appendChild(captureHost);
 
     const captureOptions: Record<string, unknown> = {
+
       scale: 3,
       backgroundColor: null,
       useCORS: true,
@@ -127,6 +130,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     } finally {
       document.body.removeChild(captureHost);
     }
+
   };
 
   const downloadCard = async () => {
@@ -134,7 +138,9 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     setDownloading(true);
     setIsCapturing(true);
     try {
+
       await waitForCaptureLayout();
+
       const canvas = await renderCardCanvas();
       if (!canvas) return;
       const a = document.createElement('a');
@@ -154,6 +160,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     try {
       setIsCapturing(true);
       await waitForCaptureLayout();
+
       const canvas = await renderCardCanvas();
       if (!canvas) return false;
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -198,7 +205,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const shareWhatsApp = () => {
     shareImage();
     const text = encodeURIComponent(
-      `📊 Kartu Akademik Mekatronika\n${name ? `${name} ` : ''}${nim ? `(${nim})` : ''}\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys`
+      `📊 Kartu Akademik Mekatronika\n${name ? `${name} ` : ''}${nim ? `(${nim})` : ''}\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys \nhttps://mekatronika-gpa.vercel.app/`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -206,7 +213,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const shareTwitter = () => {
     shareImage();
     const text = encodeURIComponent(
-      `Kartu Akademik Mekatronika 📊\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys #PolmanBandung`
+      `Kartu Akademik Mekatronika 📊\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys #PolmanBandung \nhttps://mekatronika-gpa.vercel.app/`
     );
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
@@ -340,6 +347,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
                   <div style={{
                     fontWeight: 800, fontSize: 28, lineHeight: isCapturing ? 1.18 : 1.1, ...(captureFontStyle || {}),
+
                     color: isCapturing ? '#8EA8FF' : 'transparent',
                     background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                     WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
