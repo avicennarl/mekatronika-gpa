@@ -210,6 +210,11 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
 
+
+  const captureFontStyle: React.CSSProperties | undefined = isCapturing
+    ? { fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif', textRendering: 'geometricPrecision' }
+    : undefined;
+
   return (
     <>
       {/* Trigger button */}
@@ -319,12 +324,12 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   width: 52, height: 52, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 800, fontSize: 18 , color: '#fff', flexShrink: 0,
+                  fontWeight: 800, fontSize: 18 , lineHeight: isCapturing ? 1.2 : 1, color: '#fff', flexShrink: 0, ...(captureFontStyle || {}),
                 }}>
                   {initials}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2, paddingTop: isCapturing ? 2 : 0 }}>
+                  <div style={{ fontWeight: isCapturing ? 600 : 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: isCapturing ? 1.35 : 1.2, paddingTop: isCapturing ? 3 : 0, ...(captureFontStyle || {}) }}>
                     {name || 'Nama Mahasiswa'}
                   </div>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{prodi}</div>
@@ -333,7 +338,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
                   <div style={{
-                    fontWeight: 800, fontSize: 28, lineHeight: 1.1,
+                    fontWeight: 800, fontSize: 28, lineHeight: isCapturing ? 1.18 : 1.1, ...(captureFontStyle || {}),
                     color: isCapturing ? '#8EA8FF' : 'transparent',
                     background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                     WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
@@ -343,7 +348,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                     {ipk !== null ? ipk.toFixed(3) : '–'}
                   </div>
                   {predi && (
-                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, lineHeight: 1.2, background: predi.bg, color: predi.color, marginTop: 2 }}>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, lineHeight: isCapturing ? 1.3 : 1.2, background: predi.bg, color: predi.color, marginTop: 2, ...(captureFontStyle || {}) }}>
                       {predi.label}
                     </span>
                   )}
