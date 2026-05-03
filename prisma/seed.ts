@@ -51,9 +51,9 @@ async function main() {
     { semester: 4, kode: "AM311", nama: "Teknik Kendali", sks: 2, type: CourseType.TEORI },
 
     { semester: 4, kode: "PAP1", nama: "Praktik Pemrograman Aplikasi", sks: 2, type: CourseType.PRAKTIK },
-    { semester: 4, kode: "IML", nama: "Praktik Otomasi Industri 1", sks: 2, type: CourseType.PRAKTIK },
+    { semester: 4, kode: "IML", nama: "Praktik Elektronika Otomasi Industri 1", sks: 2, type: CourseType.PRAKTIK },
     { semester: 4, kode: "TKD", nama: "Praktik Teknik Kendali", sks: 2, type: CourseType.PRAKTIK },
-    { semester: 4, kode: "PKM", nama: "Praktik Penerapan Komputer pd Mekatronika", sks: 2, type: CourseType.PRAKTIK },
+    { semester: 4, kode: "PKM", nama: "Praktik Penerapan Komputer pada Sistem Mekatronika", sks: 2, type: CourseType.PRAKTIK },
 
     // Semester 5
     { semester: 5, kode: "AO505", nama: "Ekonomi Teknik dan Kewirausahaan", sks: 2, type: CourseType.TEORI },

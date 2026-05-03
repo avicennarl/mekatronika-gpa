@@ -24,3 +24,42 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* default mobile */
+.course-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.course-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 400px;
+}
+
+/* desktop */
+@media (min-width: 768px) {
+  .course-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Desktop default */
+.container-main {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+/* Mobile override */
+@media (max-width: 768px) {
+  .container-main {
+    max-width: 100%;
+    padding: 16px;
+  }
+}
