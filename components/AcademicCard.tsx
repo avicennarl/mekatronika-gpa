@@ -50,6 +50,16 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
+
+  const waitForCaptureLayout = async () => {
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    if (document.fonts?.ready) {
+      await document.fonts.ready;
+    }
+  };
+
+
   const calcIPS = (sem: number) => {
     const semCourses = courses.filter(c => c.semester === sem);
     let total = 0, div = 0;
@@ -88,13 +98,39 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const renderCardCanvas = async () => {
     if (!cardRef.current) return null;
     const { default: html2canvas } = await import('html2canvas');
-    return html2canvas(cardRef.current, {
+    const sourceNode = cardRef.current;
+    const captureHost = document.createElement('div');
+    const captureClone = sourceNode.cloneNode(true) as HTMLDivElement;
+
+    captureHost.style.position = 'fixed';
+    captureHost.style.left = '-10000px';
+    captureHost.style.top = '0';
+    captureHost.style.padding = '0';
+    captureHost.style.background = 'transparent';
+    captureHost.style.width = `${sourceNode.offsetWidth}px`;
+    captureHost.style.boxSizing = 'content-box';
+
+    captureClone.style.margin = '0';
+    captureClone.style.width = '100%';
+    captureClone.style.boxSizing = 'border-box';
+    captureHost.appendChild(captureClone);
+    document.body.appendChild(captureHost);
+
+    const captureOptions: Record<string, unknown> = {
+
       scale: 3,
       backgroundColor: null,
       useCORS: true,
       scrollX: 0,
       scrollY: 0,
-    });
+    };
+    const html2canvasLoose = html2canvas as unknown as (element: HTMLElement, options?: Record<string, unknown>) => Promise<HTMLCanvasElement>;
+    try {
+      return await html2canvasLoose(captureHost, captureOptions);
+    } finally {
+      document.body.removeChild(captureHost);
+    }
+
   };
 
   const downloadCard = async () => {
@@ -102,6 +138,9 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     setDownloading(true);
     setIsCapturing(true);
     try {
+
+      await waitForCaptureLayout();
+
       const canvas = await renderCardCanvas();
       if (!canvas) return;
       const a = document.createElement('a');
@@ -120,6 +159,8 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     if (!navigator.share || !cardRef.current) return false;
     try {
       setIsCapturing(true);
+      await waitForCaptureLayout();
+
       const canvas = await renderCardCanvas();
       if (!canvas) return false;
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -176,6 +217,11 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     );
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
+
+
+  const captureFontStyle: React.CSSProperties | undefined = isCapturing
+    ? { fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif', textRendering: 'geometricPrecision' }
+    : undefined;
 
   return (
     <>
@@ -236,7 +282,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
               <h3 style={{ fontWeight: 700, fontSize: 16, color: '#F0F0FF', margin: 0 }}>
                 Kartu Profil Akademik
               </h3>
-              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#888899', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4 }}>
+              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#888899', cursor: 'pointer', fontSize: 20 , padding: 4 }}>
                 ×
               </button>
             </div>
@@ -286,12 +332,12 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   width: 52, height: 52, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 800, fontSize: 18, color: '#fff', flexShrink: 0,
+                  fontWeight: 800, fontSize: 18 , lineHeight: isCapturing ? 1.2 : 1, color: '#fff', flexShrink: 0, ...(captureFontStyle || {}),
                 }}>
                   {initials}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontWeight: isCapturing ? 600 : 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: isCapturing ? 1.35 : 1.2, paddingTop: isCapturing ? 3 : 0, ...(captureFontStyle || {}) }}>
                     {name || 'Nama Mahasiswa'}
                   </div>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{prodi}</div>
@@ -300,7 +346,8 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
                   <div style={{
-                    fontWeight: 800, fontSize: 28,
+                    fontWeight: 800, fontSize: 28, lineHeight: isCapturing ? 1.18 : 1.1, ...(captureFontStyle || {}),
+
                     color: isCapturing ? '#8EA8FF' : 'transparent',
                     background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                     WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
@@ -310,7 +357,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                     {ipk !== null ? ipk.toFixed(3) : '–'}
                   </div>
                   {predi && (
-                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, background: predi.bg, color: predi.color, marginTop: 2 }}>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, lineHeight: isCapturing ? 1.3 : 1.2, background: predi.bg, color: predi.color, marginTop: 2, ...(captureFontStyle || {}) }}>
                       {predi.label}
                     </span>
                   )}
