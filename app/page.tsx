@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import AcademicCard from '@/components/AcademicCard';
 
 type Course = {
   id: string;
@@ -25,11 +26,23 @@ export default function Page() {
   const [grades, setGrades] = useState<Record<string, string>>({});
   const [activeSem, setActiveSem] = useState(1);
   const [useSKS, setUseSKS] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     fetch('/api/courses')
-      .then(res => res.json())
-      .then(setCourses);
+      .then(res => {
+        if (!res.ok) throw new Error('fetch failed');
+        return res.json();
+      })
+      .then(data => {
+        setCourses(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
   }, []);
 
   const grouped = useMemo(() => {
@@ -43,37 +56,41 @@ export default function Page() {
 
   const calculateIPS = (list: Course[]) => {
     let total = 0, div = 0;
-
     list.forEach(c => {
       const g = grades[c.id];
       if (!g) return;
-
       const val = gradeMap[g];
       const w = useSKS ? c.sks : 1;
-
       total += val * w;
       div += w;
     });
-
     return div === 0 ? 0 : total / div;
   };
 
   const calculateIPK = () => {
     let total = 0, div = 0;
-
     courses.forEach(c => {
       const g = grades[c.id];
       if (!g) return;
-
       const val = gradeMap[g];
       const w = useSKS ? c.sks : 1;
-
       total += val * w;
       div += w;
     });
-
     return div === 0 ? 0 : total / div;
   };
+
+  if (loading) return (
+    <div className="container-main" style={{ textAlign: 'center', paddingTop: 80 }}>
+      <div style={{ opacity: 0.5, fontSize: 14 }}>Memuat data mata kuliah…</div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="container-main" style={{ textAlign: 'center', paddingTop: 80 }}>
+      <div style={{ color: '#ef4444', fontSize: 14 }}>Gagal memuat data. Pastikan database sudah terhubung.</div>
+    </div>
+  );
 
   return (
     <div className="container-main">
@@ -90,7 +107,7 @@ export default function Page() {
           </span>
         </h1>
         <p style={{ opacity: 0.6 }}>
-          Kalkulator IPS & IPK • 8 Semester
+          Kalkulator IPS &amp; IPK · 8 Semester
         </p>
       </div>
 
@@ -102,7 +119,7 @@ export default function Page() {
         marginBottom: 20,
         border: "1px solid #eee"
       }}>
-        <label style={{ display: "flex", gap: 10 }}>
+        <label style={{ display: "flex", gap: 10, cursor: 'pointer' }}>
           <input
             type="checkbox"
             checked={useSKS}
@@ -138,55 +155,37 @@ export default function Page() {
         ))}
       </div>
 
-      {/* COURSE GRID (RESPONSIVE) */}
+      {/* COURSE GRID */}
       <div className="course-grid">
-
         {/* TEORI */}
         <div className="course-column">
           <h3 style={{ marginBottom: 10 }}>📘 Teori</h3>
-
-            {/* HEADER */}
-  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", fontSize: 12, opacity: 0.6, marginBottom: 8 }}>
-    <div>Mata Kuliah</div>
-    <div>Grade</div>
-    <div style={{ textAlign: "right" }}>Nilai</div>
-  </div>
-
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", fontSize: 12, opacity: 0.6, marginBottom: 8 }}>
+            <div>Mata Kuliah</div>
+            <div>Grade</div>
+            <div style={{ textAlign: "right" }}>Nilai</div>
+          </div>
           {(grouped[activeSem] || [])
             .filter(c => c.type === "TEORI")
             .map(c => (
-              <CourseCard
-                key={c.id}
-                c={c}
-                grades={grades}
-                setGrades={setGrades}
-              />
+              <CourseCard key={c.id} c={c} grades={grades} setGrades={setGrades} />
             ))}
         </div>
 
         {/* PRAKTIK */}
         <div className="course-column">
           <h3 style={{ marginBottom: 10 }}>🧪 Praktik</h3>
-
-          {/* HEADER */}
-  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", fontSize: 12, opacity: 0.6, marginBottom: 8 }}>
-    <div>Mata Kuliah</div>
-    <div>Grade</div>
-    <div style={{ textAlign: "right" }}>Nilai</div>
-  </div>
-
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", fontSize: 12, opacity: 0.6, marginBottom: 8 }}>
+            <div>Mata Kuliah</div>
+            <div>Grade</div>
+            <div style={{ textAlign: "right" }}>Nilai</div>
+          </div>
           {(grouped[activeSem] || [])
             .filter(c => c.type === "PRAKTIK")
             .map(c => (
-              <CourseCard
-                key={c.id}
-                c={c}
-                grades={grades}
-                setGrades={setGrades}
-              />
+              <CourseCard key={c.id} c={c} grades={grades} setGrades={setGrades} />
             ))}
         </div>
-
       </div>
 
       {/* IPS */}
@@ -200,7 +199,6 @@ export default function Page() {
       {/* REKAP */}
       <div style={{ marginTop: 30 }}>
         <h3>Rekap Semester</h3>
-
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(4,1fr)",
@@ -209,7 +207,6 @@ export default function Page() {
         }}>
           {[1,2,3,4,5,6,7,8].map(s => {
             const ips = calculateIPS(grouped[s] || []);
-
             return (
               <div
                 key={s}
@@ -222,16 +219,12 @@ export default function Page() {
                   borderRadius: 12,
                   textAlign: "center",
                   cursor: "pointer",
-                  background:
-                    activeSem === s ? "#111827" : "#fff",
-                  color:
-                    activeSem === s ? "#fff" : "#000",
+                  background: activeSem === s ? "#111827" : "#fff",
+                  color: activeSem === s ? "#fff" : "#000",
                   border: "1px solid #eee"
                 }}
               >
-                <div style={{ fontSize: 12 }}>
-                  Sem {s}
-                </div>
+                <div style={{ fontSize: 12 }}>Sem {s}</div>
                 <div style={{
                   fontWeight: 700,
                   color: activeSem === s ? "#fff" : colors[s-1]
@@ -241,11 +234,8 @@ export default function Page() {
               </div>
             );
           })}
-          
         </div>
-        
       </div>
-      
 
       {/* IPK */}
       <div style={{
@@ -257,48 +247,33 @@ export default function Page() {
         textAlign: "center"
       }}>
         <div>IPK</div>
-        <div style={{
-          fontSize: 32,
-          fontWeight: 800
-        }}>
+        <div style={{ fontSize: 32, fontWeight: 800 }}>
           {calculateIPK().toFixed(3)}
         </div>
       </div>
-      <footer
-  style={{
-    marginTop: 50,
-    paddingTop: 20,
-    borderTop: "1px solid #e5e7eb",
-    display: "flex",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    fontSize: 12,
-    color: "#6b7280"
-  }}
->
-  <div>
-    © {new Date().getFullYear()} Mekatronika GPA AE22 Polman Bandung
-  </div>
 
-  <div style={{ display: "flex", gap: 12 }}>
-    <a
-      href="https://mekatronika-gpa.vercel.app/"
-      target="_blank"
-    >
-      Live Demo
-    </a>
+      {/* ✨ ACADEMIC CARD */}
+      <AcademicCard courses={courses} grades={grades} useSKS={useSKS} />
 
-    <a
-      href="https://github.com/avicennarl/mekatronika-gpa"
-      target="_blank"
-    >
-      GitHub
-    </a>
-  </div>
-</footer>
+      {/* FOOTER */}
+      <footer style={{
+        marginTop: 50,
+        paddingTop: 20,
+        borderTop: "1px solid #e5e7eb",
+        display: "flex",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        fontSize: 12,
+        color: "#6b7280"
+      }}>
+        <div>© {new Date().getFullYear()} Mekatronika GPA AE22 Polman Bandung</div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <a href="https://mekatronika-gpa.vercel.app/" target="_blank">Live Demo</a>
+          <a href="https://github.com/avicennarl/mekatronika-gpa" target="_blank">GitHub</a>
+        </div>
+      </footer>
     </div>
   );
-  
 }
 
 /* COMPONENT */
@@ -310,39 +285,29 @@ type CourseCardProps = {
 
 const CourseCard = ({ c, grades, setGrades }: CourseCardProps) => {
   const grade = grades[c.id];
-  const nilai = grade ? gradeMap[grade] : null;
+  const nilai = grade !== undefined && grade !== '' ? gradeMap[grade] : null;
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "2fr 1fr 1fr",
-        alignItems: "center",
-        padding: "12px 0",
-        borderBottom: "1px solid #eee"
-      }}
-    >
-      {/* MATA KULIAH */}
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "2fr 1fr 1fr",
+      alignItems: "center",
+      padding: "12px 0",
+      borderBottom: "1px solid #eee"
+    }}>
       <div>
         <div style={{ fontWeight: 600 }}>{c.nama}</div>
         <div style={{ fontSize: 12, opacity: 0.6 }}>
-          {c.sks} SKS • {c.type}
+          {c.sks} SKS · {c.type}
         </div>
       </div>
 
-      {/* GRADE */}
       <select
         value={grade || ""}
-        onChange={(e) =>
-          setGrades({
-            ...grades,
-            [c.id]: e.target.value
-          })
+        onChange={e =>
+          setGrades(prev => ({ ...prev, [c.id]: e.target.value }))
         }
-        style={{
-          padding: 6,
-          borderRadius: 6
-        }}
+        style={{ padding: 6, borderRadius: 6 }}
       >
         <option value="">-</option>
         {Object.keys(gradeMap).map(g => (
@@ -350,53 +315,17 @@ const CourseCard = ({ c, grades, setGrades }: CourseCardProps) => {
         ))}
       </select>
 
-      {/* NILAI ANGKA */}
-      <div
-        style={{
-          fontWeight: 600,
-          textAlign: "right",
-          color:
-            nilai === null ? "#9ca3af" :
-            nilai >= 3.5 ? "#16a34a" :
-            nilai >= 2.5 ? "#f59e0b" :
-            "#ef4444"
-        }}
-      >
-        {nilai !== null ? nilai.toFixed(1) : "-"}
+      <div style={{
+        fontWeight: 600,
+        textAlign: "right",
+        color:
+          nilai === null ? "#9ca3af" :
+          nilai >= 3.5 ? "#16a34a" :
+          nilai >= 2.5 ? "#f59e0b" :
+          "#ef4444"
+      }}>
+        {nilai !== null ? nilai.toFixed(1) : "–"}
       </div>
     </div>
   );
 };
-
-<footer
-  style={{
-    marginTop: 50,
-    paddingTop: 20,
-    borderTop: "1px solid #e5e7eb",
-    display: "flex",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    fontSize: 12,
-    color: "#6b7280"
-  }}
->
-  <div>
-    © {new Date().getFullYear()} Mekatronika GPA
-  </div>
-
-  <div style={{ display: "flex", gap: 12 }}>
-    <a
-      href="https://mekatronika-gpa.vercel.app/"
-      target="_blank"
-    >
-      Live Demo
-    </a>
-
-    <a
-      href="https://github.com/avicennarl/mekatronika-gpa"
-      target="_blank"
-    >
-      GitHub
-    </a>
-  </div>
-</footer>
