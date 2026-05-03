@@ -50,6 +50,14 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
+  const waitForCaptureLayout = async () => {
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    if (document.fonts?.ready) {
+      await document.fonts.ready;
+    }
+  };
+
   const calcIPS = (sem: number) => {
     const semCourses = courses.filter(c => c.semester === sem);
     let total = 0, div = 0;
@@ -125,6 +133,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     setDownloading(true);
     setIsCapturing(true);
     try {
+      await waitForCaptureLayout();
       const canvas = await renderCardCanvas();
       if (!canvas) return;
       const a = document.createElement('a');
@@ -143,6 +152,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     if (!navigator.share || !cardRef.current) return false;
     try {
       setIsCapturing(true);
+      await waitForCaptureLayout();
       const canvas = await renderCardCanvas();
       if (!canvas) return false;
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -297,7 +307,6 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                 padding: '24px 22px',
                 position: 'relative',
                 overflow: 'hidden',
-                fontFamily: isCapturing ? 'Arial, Helvetica, sans-serif' : undefined,
               }}
             >
               {/* Decorative blobs */}
