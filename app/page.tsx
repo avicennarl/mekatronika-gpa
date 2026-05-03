@@ -21,11 +21,35 @@ const colors = [
   "#ff9f43","#4d96ff","#00b894","#ff6b9d"
 ];
 
+const STORAGE_KEYS = {
+  grades: 'mekatronika_gpa_grades_v1',
+  useSKS: 'mekatronika_gpa_use_sks_v1',
+  activeSem: 'mekatronika_gpa_active_sem_v1',
+};
+
 export default function Page() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [grades, setGrades] = useState<Record<string, string>>({});
-  const [activeSem, setActiveSem] = useState(1);
-  const [useSKS, setUseSKS] = useState(true);
+  const [grades, setGrades] = useState<Record<string, string>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.grades);
+      if (!saved) return {};
+      const parsed = JSON.parse(saved) as Record<string, string>;
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  });
+  const [activeSem, setActiveSem] = useState(() => {
+    if (typeof window === 'undefined') return 1;
+    const saved = Number(localStorage.getItem(STORAGE_KEYS.activeSem));
+    return Number.isInteger(saved) && saved >= 1 && saved <= 8 ? saved : 1;
+  });
+  const [useSKS, setUseSKS] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem(STORAGE_KEYS.useSKS);
+    return saved === null ? true : saved === 'true';
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -44,6 +68,32 @@ export default function Page() {
         setLoading(false);
       });
   }, []);
+
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.grades, JSON.stringify(grades));
+    } catch {
+      // ignore storage quota / privacy mode errors
+    }
+  }, [grades]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.useSKS, String(useSKS));
+    } catch {
+      // ignore storage quota / privacy mode errors
+    }
+  }, [useSKS]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.activeSem, String(activeSem));
+    } catch {
+      // ignore storage quota / privacy mode errors
+    }
+  }, [activeSem]);
+
 
   const grouped = useMemo(() => {
     const acc: Record<number, Course[]> = {};
@@ -78,6 +128,10 @@ export default function Page() {
       div += w;
     });
     return div === 0 ? 0 : total / div;
+  };
+
+  const clearAllGrades = () => {
+    setGrades({});
   };
 
   if (loading) return (
@@ -117,9 +171,14 @@ export default function Page() {
         padding: 12,
         borderRadius: 12,
         marginBottom: 20,
-        border: "1px solid #eee"
+        border: "1px solid #eee",
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 12,
+        flexWrap: 'wrap',
       }}>
-        <label style={{ display: "flex", gap: 10, cursor: 'pointer' }}>
+        <label style={{ display: "flex", gap: 10, cursor: 'pointer', alignItems: 'center' }}>
           <input
             type="checkbox"
             checked={useSKS}
@@ -127,6 +186,43 @@ export default function Page() {
           />
           Gunakan Bobot SKS
         </label>
+
+        <button
+          onClick={clearAllGrades}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            border: '1px solid rgba(239,68,68,0.25)',
+            background: 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(244,63,94,0.08))',
+            color: '#E11D48',
+            padding: '8px 14px',
+            borderRadius: 999,
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: 'pointer',
+            transition: 'all .2s ease',
+            boxShadow: '0 4px 14px rgba(239,68,68,0.14)',
+            backdropFilter: 'blur(6px)',
+          }}
+          title="Kosongkan semua nilai"
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 8px 18px rgba(239,68,68,0.2)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = '0 4px 14px rgba(239,68,68,0.14)';
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 6h18" />
+            <path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2" />
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+            <path d="M10 11v6M14 11v6" />
+          </svg>
+          Clear All Nilai
+        </button>
       </div>
 
       {/* SEMESTER TABS */}
