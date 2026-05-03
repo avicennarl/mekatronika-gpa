@@ -39,7 +39,7 @@ Aplikasi web full-stack untuk menghitung **IPS (Indeks Prestasi Semester)** dan 
 
 ## 📂 Struktur Proyek
 
-```bash id="struktur"
+```bash
 app/
   api/
     courses/
@@ -57,7 +57,7 @@ prisma/
 
 ### 1. Clone repository
 
-```bash id="clone"
+```bash
 git clone https://github.com/avicennarl/mekatronika-gpa.git
 cd mekatronika-gpa
 ```
@@ -66,7 +66,7 @@ cd mekatronika-gpa
 
 ### 2. Install dependencies
 
-```bash id="install"
+```bash
 npm install
 ```
 
@@ -76,7 +76,7 @@ npm install
 
 Buat file `.env`:
 
-```env id="env"
+```env
 DATABASE_URL="your_postgresql_connection_string"
 ```
 
@@ -84,7 +84,7 @@ DATABASE_URL="your_postgresql_connection_string"
 
 ### 4. Generate Prisma Client
 
-```bash id="generate"
+```bash
 npx prisma generate
 ```
 
@@ -92,7 +92,7 @@ npx prisma generate
 
 ### 5. Jalankan migrasi database
 
-```bash id="migrate"
+```bash
 npx prisma migrate dev
 ```
 
@@ -100,7 +100,7 @@ npx prisma migrate dev
 
 ### 6. Seed data mata kuliah
 
-```bash id="seed"
+```bash
 npx prisma db seed
 ```
 
@@ -108,7 +108,7 @@ npx prisma db seed
 
 ### 7. Jalankan aplikasi
 
-```bash id="run"
+```bash
 npm run dev
 ```
 
@@ -116,7 +116,7 @@ npm run dev
 
 ## 🌐 Endpoint API
 
-```bash id="api"
+```bash
 GET /api/courses
 ```
 
@@ -126,17 +126,29 @@ Mengembalikan seluruh data mata kuliah dari database.
 
 ## 📊 Rumus Perhitungan
 
-### IPS
+### IPS (Indeks Prestasi Semester)
 
-[
-IPS = \frac{\sum (nilai × bobot)}{\sum bobot}
-]
+IPS = (Σ (Nilai × SKS)) / (Σ SKS)
 
-### IPK
+### IPK (Indeks Prestasi Kumulatif)
 
-[
-IPK = \frac{\sum (nilai × bobot)}{\sum bobot}
-]
+IPK = (Σ (Nilai × SKS)) / (Σ SKS)
+
+**Keterangan:**
+
+* Nilai = bobot nilai mata kuliah (A = 4.0, AB = 3.5, dst)
+* SKS = jumlah kredit mata kuliah
+
+---
+
+### Contoh Perhitungan
+
+| Mata Kuliah | Nilai | SKS | Nilai × SKS |
+| ----------- | ----- | --- | ----------- |
+| A           | 4.0   | 3   | 12          |
+| B           | 3.0   | 2   | 6           |
+
+IPS = 18 / 5 = **3.60**
 
 ---
 
@@ -177,30 +189,11 @@ Data digunakan sebagai representasi struktur mata kuliah untuk keperluan simulas
 
 ## 📈 Perkembangan Proyek
 
-* Membuat kalkulator IPK awal dengan data statis
-* Integrasi database menggunakan Prisma + Supabase
-* Implementasi API untuk data dinamis
-* Penambahan fitur toggle bobot SKS
-* Deployment aplikasi ke Vercel
-
----
-
-## 🔒 Akses
-
-Repository ini bersifat **private** dan digunakan untuk pengembangan internal.
-
----
-### IPS (Indeks Prestasi Semester)
-
-\[
-IPS = \frac{\sum (N_i \times SKS_i)}{\sum SKS_i}
-\]
-
-### IPK (Indeks Prestasi Kumulatif)
-
-\[
-IPK = \frac{\sum (N_i \times SKS_i)}{\sum SKS_i}
-\]
+* Membuat kalkulator IPK awal dengan data statis (Apr 2026)
+* Integrasi database menggunakan Prisma + Supabase (Mei 2026)
+* Implementasi API untuk data dinamis (Mei 2026)
+* Penambahan fitur toggle bobot SKS (Mei 2026)
+* Deployment aplikasi ke Vercel (Mei 2026)
 
 ---
 
