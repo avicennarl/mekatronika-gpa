@@ -372,7 +372,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   {initials}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: isCapturing ? 600 : 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: isCapturing ? 1.35 : 1.2, paddingTop: isCapturing ? 3 : 0, ...(captureFontStyle || {}) }}>
+                  <div style={{ fontWeight: isCapturing ? 600 : 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: isCapturing ? 'visible' : 'hidden', textOverflow: isCapturing ? 'clip' : 'ellipsis', lineHeight: isCapturing ? 1.5 : 1.2, paddingTop: isCapturing ? 4 : 0, paddingBottom: isCapturing ? 2 : 0, ...(captureFontStyle || {}) }}>
                     {name || 'Nama Mahasiswa'}
                   </div>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{prodi}</div>
@@ -381,7 +381,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
                   <div style={{
-                    fontWeight: 800, fontSize: 28, lineHeight: isCapturing ? 1.18 : 1.1, ...(captureFontStyle || {}),
+                    fontWeight: 800, fontSize: 28, lineHeight: isCapturing ? 1.24 : 1.1, paddingTop: isCapturing ? 2 : 0, ...(captureFontStyle || {}),
                     color: isCapturing ? '#8EA8FF' : 'transparent',
                     background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                     WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
