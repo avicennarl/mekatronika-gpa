@@ -238,7 +238,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const shareWhatsApp = () => {
     shareImage();
     const text = encodeURIComponent(
-      `📊 Kartu Akademik Mekatronika\n${name ? `${name} ` : ''}${nim ? `(${nim})` : ''}\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys`
+      `📊 Kartu Akademik Mekatronika\n${name ? `${name} ` : ''}${nim ? `(${nim})` : ''}\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys \nhttps://mekatronika-gpa.vercel.app/`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -246,7 +246,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const shareTwitter = () => {
     shareImage();
     const text = encodeURIComponent(
-      `Kartu Akademik Mekatronika 📊\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys #PolmanBandung`
+      `Kartu Akademik Mekatronika 📊\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys #PolmanBandung \nhttps://mekatronika-gpa.vercel.app/`
     );
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
