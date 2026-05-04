@@ -50,7 +50,6 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
-
   const waitForCaptureLayout = async () => {
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
@@ -58,7 +57,6 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
       await document.fonts.ready;
     }
   };
-
 
   const calcIPS = (sem: number) => {
     const semCourses = courses.filter(c => c.semester === sem);
@@ -117,7 +115,6 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     document.body.appendChild(captureHost);
 
     const captureOptions: Record<string, unknown> = {
-
       scale: 3,
       backgroundColor: null,
       useCORS: true,
@@ -130,7 +127,6 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     } finally {
       document.body.removeChild(captureHost);
     }
-
   };
 
   const downloadCard = async () => {
@@ -138,9 +134,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     setDownloading(true);
     setIsCapturing(true);
     try {
-
       await waitForCaptureLayout();
-
       const canvas = await renderCardCanvas();
       if (!canvas) return;
       const a = document.createElement('a');
@@ -155,12 +149,51 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     }
   };
 
+  const downloadPdf = async () => {
+    if (!cardRef.current) return;
+    setIsCapturing(true);
+    try {
+      await waitForCaptureLayout();
+      const canvas = await renderCardCanvas();
+      if (!canvas) return;
+      const dataUrl = canvas.toDataURL('image/png');
+      const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=1200');
+      if (!printWindow) return;
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Kartu Akademik PDF</title>
+            <style>
+              @page { size: A4 portrait; margin: 10mm; }
+              html, body { margin: 0; padding: 0; background: #fff; }
+              .wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+              img { width: 100%; max-width: 760px; height: auto; display: block; }
+            </style>
+          </head>
+          <body>
+            <div class="wrap"><img src="${dataUrl}" alt="Kartu Akademik" /></div>
+            <script>
+              window.onload = () => {
+                window.print();
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
   const shareImage = async () => {
     if (!navigator.share || !cardRef.current) return false;
     try {
       setIsCapturing(true);
       await waitForCaptureLayout();
-
       const canvas = await renderCardCanvas();
       if (!canvas) return false;
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -347,7 +380,6 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
                   <div style={{
                     fontWeight: 800, fontSize: 28, lineHeight: isCapturing ? 1.18 : 1.1, ...(captureFontStyle || {}),
-
                     color: isCapturing ? '#8EA8FF' : 'transparent',
                     background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                     WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
@@ -460,6 +492,21 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   )}
                 </button>
               </div>
+
+              <button
+                onClick={downloadPdf}
+                style={{
+                  ...btnBase,
+                  width: '100%',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#F0F0FF',
+                }}
+                title="Buka dialog print untuk simpan sebagai PDF"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+                Simpan ke PDF
+              </button>
 
               {/* Bagikan ke media sosial */}
               <div>
