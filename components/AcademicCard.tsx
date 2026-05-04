@@ -48,6 +48,15 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const [downloading, setDownloading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  const waitForCaptureLayout = async () => {
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    if (document.fonts?.ready) {
+      await document.fonts.ready;
+    }
+  };
 
   const calcIPS = (sem: number) => {
     const semCourses = courses.filter(c => c.semester === sem);
@@ -84,17 +93,50 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     ? name.trim().split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase()
     : '?';
 
+  const renderCardCanvas = async () => {
+    if (!cardRef.current) return null;
+    const { default: html2canvas } = await import('html2canvas');
+    const sourceNode = cardRef.current;
+    const captureHost = document.createElement('div');
+    const captureClone = sourceNode.cloneNode(true) as HTMLDivElement;
+
+    captureHost.style.position = 'fixed';
+    captureHost.style.left = '-10000px';
+    captureHost.style.top = '0';
+    captureHost.style.padding = '0';
+    captureHost.style.background = 'transparent';
+    captureHost.style.width = `${sourceNode.offsetWidth}px`;
+    captureHost.style.boxSizing = 'content-box';
+
+    captureClone.style.margin = '0';
+    captureClone.style.width = '100%';
+    captureClone.style.boxSizing = 'border-box';
+    captureHost.appendChild(captureClone);
+    document.body.appendChild(captureHost);
+
+    const captureOptions: Record<string, unknown> = {
+      scale: 3,
+      backgroundColor: null,
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0,
+    };
+    const html2canvasLoose = html2canvas as unknown as (element: HTMLElement, options?: Record<string, unknown>) => Promise<HTMLCanvasElement>;
+    try {
+      return await html2canvasLoose(captureHost, captureOptions);
+    } finally {
+      document.body.removeChild(captureHost);
+    }
+  };
+
   const downloadCard = async () => {
     if (!cardRef.current) return;
     setDownloading(true);
+    setIsCapturing(true);
     try {
-      const { default: html2canvas } = await import('html2canvas');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const canvas = await (html2canvas as any)(cardRef.current, {
-        scale: 3,
-        backgroundColor: null,
-        useCORS: true,
-      });
+      await waitForCaptureLayout();
+      const canvas = await renderCardCanvas();
+      if (!canvas) return;
       const a = document.createElement('a');
       a.download = 'mekatronika-akademik-card.png';
       a.href = canvas.toDataURL('image/png');
@@ -102,7 +144,75 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
     } catch (e) {
       console.error(e);
     } finally {
+      setIsCapturing(false);
       setDownloading(false);
+    }
+  };
+
+  const downloadPdf = async () => {
+    if (!cardRef.current) return;
+    setIsCapturing(true);
+    try {
+      await waitForCaptureLayout();
+      const canvas = await renderCardCanvas();
+      if (!canvas) return;
+      const dataUrl = canvas.toDataURL('image/png');
+      const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=1200');
+      if (!printWindow) return;
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Kartu Akademik PDF</title>
+            <style>
+              @page { size: A4 portrait; margin: 10mm; }
+              html, body { margin: 0; padding: 0; background: #fff; }
+              .wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+              img { width: 100%; max-width: 760px; height: auto; display: block; }
+            </style>
+          </head>
+          <body>
+            <div class="wrap"><img src="${dataUrl}" alt="Kartu Akademik" /></div>
+            <script>
+              window.onload = () => {
+                window.print();
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
+  const shareImage = async () => {
+    if (!navigator.share || !cardRef.current) return false;
+    try {
+      setIsCapturing(true);
+      await waitForCaptureLayout();
+      const canvas = await renderCardCanvas();
+      if (!canvas) return false;
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) return false;
+      const file = new File([blob], 'kartu-akademik-mekatronika.png', { type: 'image/png' });
+      const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
+      const canShareFile = nav.canShare?.({ files: [file] }) ?? false;
+      if (!canShareFile) return false;
+      await navigator.share({
+        files: [file],
+        title: 'Kartu Akademik Mekatronika',
+        text: `IPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}`,
+      });
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    } finally {
+      setIsCapturing(false);
     }
   };
 
@@ -126,6 +236,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   };
 
   const shareWhatsApp = () => {
+    shareImage();
     const text = encodeURIComponent(
       `📊 Kartu Akademik Mekatronika\n${name ? `${name} ` : ''}${nim ? `(${nim})` : ''}\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys`
     );
@@ -133,11 +244,17 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
   };
 
   const shareTwitter = () => {
+    shareImage();
     const text = encodeURIComponent(
       `Kartu Akademik Mekatronika 📊\nIPK: ${ipk !== null ? ipk.toFixed(3) : '–'}${predi ? ` — ${predi.label}` : ''}\n\n#MekatronikaJourneys #PolmanBandung`
     );
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
+
+
+  const captureFontStyle: React.CSSProperties | undefined = isCapturing
+    ? { fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif', textRendering: 'geometricPrecision' }
+    : undefined;
 
   return (
     <>
@@ -198,7 +315,7 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
               <h3 style={{ fontWeight: 700, fontSize: 16, color: '#F0F0FF', margin: 0 }}>
                 Kartu Profil Akademik
               </h3>
-              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#888899', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4 }}>
+              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#888899', cursor: 'pointer', fontSize: 20 , padding: 4 }}>
                 ×
               </button>
             </div>
@@ -248,12 +365,12 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   width: 52, height: 52, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #4D96FF, #C77DFF)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 800, fontSize: 18, color: '#fff', flexShrink: 0,
+                  fontWeight: 800, fontSize: 18 , lineHeight: isCapturing ? 1.2 : 1, color: '#fff', flexShrink: 0, ...(captureFontStyle || {}),
                 }}>
                   {initials}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontWeight: isCapturing ? 600 : 700, fontSize: 15, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: isCapturing ? 1.35 : 1.2, paddingTop: isCapturing ? 3 : 0, ...(captureFontStyle || {}) }}>
                     {name || 'Nama Mahasiswa'}
                   </div>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{prodi}</div>
@@ -262,15 +379,17 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>IPK</div>
                   <div style={{
-                    fontWeight: 800, fontSize: 28,
-                    background: 'linear-gradient(135deg, #4D96FF, #C77DFF)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
+                    fontWeight: 800, fontSize: 28, lineHeight: isCapturing ? 1.18 : 1.1, ...(captureFontStyle || {}),
+                    color: isCapturing ? '#8EA8FF' : 'transparent',
+                    background: isCapturing ? 'none' : 'linear-gradient(135deg, #4D96FF, #C77DFF)',
+                    WebkitBackgroundClip: isCapturing ? 'border-box' : 'text',
+                    WebkitTextFillColor: isCapturing ? '#8EA8FF' : 'transparent',
+                    backgroundClip: isCapturing ? 'border-box' : 'text',
                   }}>
                     {ipk !== null ? ipk.toFixed(3) : '–'}
                   </div>
                   {predi && (
-                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, background: predi.bg, color: predi.color, marginTop: 2 }}>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600, lineHeight: isCapturing ? 1.3 : 1.2, background: predi.bg, color: predi.color, marginTop: 2, ...(captureFontStyle || {}) }}>
                       {predi.label}
                     </span>
                   )}
@@ -373,6 +492,21 @@ export default function AcademicCard({ courses, grades, useSKS }: Props) {
                   )}
                 </button>
               </div>
+
+              <button
+                onClick={downloadPdf}
+                style={{
+                  ...btnBase,
+                  width: '100%',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#F0F0FF',
+                }}
+                title="Buka dialog print untuk simpan sebagai PDF"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+                Simpan ke PDF
+              </button>
 
               {/* Bagikan ke media sosial */}
               <div>
