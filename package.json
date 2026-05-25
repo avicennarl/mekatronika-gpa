@@ -6,19 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate"
+    "lint": "eslint"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
     "@vercel/analytics": "^2.0.1",
-    "dotenv": "^17.4.2",
     "html2canvas": "^1.4.1",
-    "next": "16.2.4",
-    "prisma": "^5.22.0",
+    "next": "^16.2.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "ts-node": "^10.9.2"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -29,8 +24,5 @@
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
   }
 }
