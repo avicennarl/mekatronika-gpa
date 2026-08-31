@@ -78,13 +78,16 @@ const raw: Omit<Course, 'id'>[] = [
   { semester: 6, kode: 'TM522',  nama: 'Praktik Supervisi',                     sks: 2, type: 'PRAKTIK' },
 
   // ── Semester 7 ──────────────────────────────────────────────────────────────
-  { semester: 7, kode: 'PIL1',   nama: 'Mata Kuliah Pilihan 1',                 sks: 2, type: 'TEORI'   },
-  { semester: 7, kode: 'PIL2',   nama: 'Mata Kuliah Pilihan 2',                 sks: 2, type: 'TEORI'   },
-  { semester: 7, kode: 'PIL3',   nama: 'Mata Kuliah Pilihan 3',                 sks: 2, type: 'TEORI'   },
-  { semester: 7, kode: 'PIL4',   nama: 'Mata Kuliah Pilihan 4',                 sks: 2, type: 'TEORI'   },
-  { semester: 7, kode: 'PILP1',  nama: 'Praktik Pilihan 1',                     sks: 2, type: 'PRAKTIK' },
-  { semester: 7, kode: 'PILP2',  nama: 'Praktik Pilihan 2',                     sks: 2, type: 'PRAKTIK' },
-  { semester: 7, kode: 'PILP3',  nama: 'Praktik Pilihan 3',                     sks: 2, type: 'PRAKTIK' },
+  { semester: 7, kode: 'SM107',  nama: 'Pancasila dan Kewarganegaraan',          sks: 2, type: 'TEORI'   },
+  { semester: 7, kode: 'MJ403',  nama: 'Manajemen Mutu',                         sks: 2, type: 'TEORI'   },
+  { semester: 7, kode: 'AO487',  nama: 'Proposal Tugas Akhir',                   sks: 2, type: 'TEORI'   },
+  { semester: 7, kode: 'TM522',  nama: 'Praktik Supervisi',                      sks: 1, type: 'PRAKTIK' },
+  { semester: 7, kode: 'ME184',  nama: 'Praktik Produksi',                       sks: 6, type: 'PRAKTIK' },
+  { semester: 7, kode: 'SM118',  nama: 'Pengabdian pada Masyarakat (KKN)',       sks: 4, type: 'PRAKTIK' },
+  { semester: 7, kode: 'DP542',  nama: 'Perencanaan dan Pengendalian Produksi',  sks: 1, type: 'PRAKTIK' },
+  { semester: 7, kode: 'MM184',  nama: 'Praktik Perawatan dan Perbaikan',        sks: 1, type: 'PRAKTIK' },
+  { semester: 7, kode: 'AM506',  nama: 'Praktik Pengelolaan Alat dan Bahan',     sks: 1, type: 'PRAKTIK' },
+  { semester: 7, kode: 'AO488',  nama: 'Tugas Akhir (Praktik)',                  sks: 1, type: 'PRAKTIK' },
 
   // ── Semester 8 ──────────────────────────────────────────────────────────────
   { semester: 8, kode: '22SM801',nama: 'Agama',                                  sks: 2, type: 'TEORI'   },
@@ -93,6 +96,7 @@ const raw: Omit<Course, 'id'>[] = [
   { semester: 8, kode: '22AM819',nama: 'Kendali Cerdas',                         sks: 2, type: 'TEORI'   },
   { semester: 8, kode: '22AM827',nama: 'Kapita Selekta Mekatronika',             sks: 2, type: 'TEORI'   },
   { semester: 8, kode: '22AM834',nama: 'Robotika',                               sks: 2, type: 'TEORI'   },
+  { semester: 8, kode: '22AM832',nama: 'Tugas Akhir',                            sks: 4, type: 'TEORI'   },
   { semester: 8, kode: 'KDC',    nama: 'Praktik Kendali Cerdas',                sks: 2, type: 'PRAKTIK' },
   { semester: 8, kode: 'TA',     nama: 'Praktik Tugas Akhir',                   sks: 4, type: 'PRAKTIK' },
 ];
