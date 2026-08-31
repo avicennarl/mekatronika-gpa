@@ -96,6 +96,7 @@ const raw: Omit<Course, 'id'>[] = [
   { semester: 8, kode: '22AM819',nama: 'Kendali Cerdas',                         sks: 2, type: 'TEORI'   },
   { semester: 8, kode: '22AM827',nama: 'Kapita Selekta Mekatronika',             sks: 2, type: 'TEORI'   },
   { semester: 8, kode: '22AM834',nama: 'Robotika',                               sks: 2, type: 'TEORI'   },
+  { semester: 8, kode: '22AM832',nama: 'Tugas Akhir',                            sks: 4, type: 'TEORI'   },
   { semester: 8, kode: 'KDC',    nama: 'Praktik Kendali Cerdas',                sks: 2, type: 'PRAKTIK' },
   { semester: 8, kode: 'TA',     nama: 'Praktik Tugas Akhir',                   sks: 4, type: 'PRAKTIK' },
 ];
