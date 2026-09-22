@@ -87,7 +87,6 @@ const raw: Omit<Course, 'id'>[] = [
   { semester: 7, kode: 'DP542',  nama: 'Perencanaan dan Pengendalian Produksi',  sks: 1, type: 'PRAKTIK' },
   { semester: 7, kode: 'MM184',  nama: 'Praktik Perawatan dan Perbaikan',        sks: 1, type: 'PRAKTIK' },
   { semester: 7, kode: 'AM506',  nama: 'Praktik Pengelolaan Alat dan Bahan',     sks: 1, type: 'PRAKTIK' },
-  { semester: 7, kode: 'AO488',  nama: 'Tugas Akhir (Praktik)',                  sks: 1, type: 'PRAKTIK' },
 
   // ── Semester 8 ──────────────────────────────────────────────────────────────
   { semester: 8, kode: '22SM801',nama: 'Agama',                                  sks: 2, type: 'TEORI'   },
@@ -96,7 +95,6 @@ const raw: Omit<Course, 'id'>[] = [
   { semester: 8, kode: '22AM819',nama: 'Kendali Cerdas',                         sks: 2, type: 'TEORI'   },
   { semester: 8, kode: '22AM827',nama: 'Kapita Selekta Mekatronika',             sks: 2, type: 'TEORI'   },
   { semester: 8, kode: '22AM834',nama: 'Robotika',                               sks: 2, type: 'TEORI'   },
-  { semester: 8, kode: '22AM832',nama: 'Tugas Akhir',                            sks: 4, type: 'TEORI'   },
   { semester: 8, kode: 'KDC',    nama: 'Praktik Kendali Cerdas',                sks: 2, type: 'PRAKTIK' },
   { semester: 8, kode: 'TA',     nama: 'Praktik Tugas Akhir',                   sks: 4, type: 'PRAKTIK' },
 ];

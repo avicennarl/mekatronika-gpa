@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import AcademicCard from '@/components/AcademicCard';
 
 type Course = {
@@ -52,6 +52,77 @@ export default function Page() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [notice, setNotice] = useState<{ text: string; ok: boolean } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showNotice = (text: string, ok: boolean) => {
+    setNotice({ text, ok });
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
+    noticeTimer.current = setTimeout(() => setNotice(null), 2500);
+  };
+
+  const handleBackup = () => {
+    const payload = {
+      app: 'mekatronika-gpa',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      grades,
+      useSKS,
+      activeSem,
+      profile: {
+        name: '',
+        nim: '',
+        prodi: 'Teknologi Rekayasa Mekatronika',
+      },
+    };
+    try {
+      const saved = localStorage.getItem('mekatronika_gpa_profile_v1');
+      if (saved) payload.profile = JSON.parse(saved);
+    } catch {
+      // keep defaults
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.download = 'mekatronika-gpa-backup.json';
+    a.href = url;
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotice('Backup berhasil diunduh', true);
+  };
+
+  const handleRestoreFile = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        const gradeKeys = Object.keys(gradeMap);
+        if (data && typeof data === 'object' && data.grades && typeof data.grades === 'object') {
+          const g: Record<string, string> = {};
+          for (const [k, v] of Object.entries(data.grades)) {
+            if (gradeKeys.includes(v as string) || v === '') g[k] = v as string;
+          }
+          setGrades(g);
+        }
+        if (typeof data.useSKS === 'boolean') setUseSKS(data.useSKS);
+        if (Number.isInteger(data.activeSem) && data.activeSem >= 1 && data.activeSem <= 8) {
+          setActiveSem(data.activeSem);
+        }
+        if (data.profile && typeof data.profile === 'object') {
+          window.dispatchEvent(new CustomEvent('mekatronika:restore-profile', { detail: data.profile }));
+        }
+        showNotice('Restore berhasil', true);
+      } catch {
+        showNotice('File backup tidak valid', false);
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.onerror = () => showNotice('Gagal membaca file', false);
+    reader.readAsText(file);
+  };
 
   useEffect(() => {
     fetch('/api/courses')
@@ -225,6 +296,51 @@ export default function Page() {
         </button>
       </div>
 
+      {/* BACKUP & RESTORE */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json,application/json"
+        style={{ display: 'none' }}
+        onChange={e => handleRestoreFile(e.target.files?.[0])}
+      />
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 20,
+      }}>
+        <button
+          onClick={handleBackup}
+          style={{ ...dataBtn, background: '#fff', color: '#374151', border: '1px solid #e5e7eb' }}
+          title="Unduh backup nilai ke file JSON"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4M12 3v12M16 11l-4-4-4 4"/></svg>
+          Backup Nilai
+        </button>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          style={{ ...dataBtn, background: '#fff', color: '#374151', border: '1px solid #e5e7eb' }}
+          title="Pulihkan nilai dari file backup"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4M12 21V9M16 13l-4 4-4-4"/></svg>
+          Restore Nilai
+        </button>
+        {notice && (
+          <span style={{
+            fontSize: 12,
+            fontWeight: 600,
+            padding: '5px 12px',
+            borderRadius: 999,
+            background: notice.ok ? 'rgba(22,163,74,0.12)' : 'rgba(239,68,68,0.12)',
+            color: notice.ok ? '#16a34a' : '#dc2626',
+          }}>
+            {notice.text}
+          </span>
+        )}
+      </div>
+
       {/* SEMESTER TABS */}
       <div style={{
         display: "flex",
@@ -373,6 +489,18 @@ export default function Page() {
 }
 
 /* COMPONENT */
+const dataBtn: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  borderRadius: 999,
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'box-shadow .15s, transform .15s',
+};
+
 type CourseCardProps = {
   c: Course;
   grades: Record<string, string>;

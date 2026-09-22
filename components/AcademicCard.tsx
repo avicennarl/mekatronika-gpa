@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type Course = {
   id: string;
@@ -41,14 +41,54 @@ type Props = {
 
 export default function AcademicCard({ courses, grades, useSKS }: Props) {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [nim, setNim] = useState('');
-  const [prodi, setProdi] = useState('Teknologi Rekayasa Mekatronika');
+  const [name, setName] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    try {
+      return JSON.parse(localStorage.getItem('mekatronika_gpa_profile_v1') || '{}').name || '';
+    } catch {
+      return '';
+    }
+  });
+  const [nim, setNim] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    try {
+      return JSON.parse(localStorage.getItem('mekatronika_gpa_profile_v1') || '{}').nim || '';
+    } catch {
+      return '';
+    }
+  });
+  const [prodi, setProdi] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'Teknologi Rekayasa Mekatronika';
+    try {
+      return JSON.parse(localStorage.getItem('mekatronika_gpa_profile_v1') || '{}').prodi || 'Teknologi Rekayasa Mekatronika';
+    } catch {
+      return 'Teknologi Rekayasa Mekatronika';
+    }
+  });
   const [copying, setCopying] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('mekatronika_gpa_profile_v1', JSON.stringify({ name, nim, prodi }));
+    } catch {
+      // ignore storage quota / privacy mode errors
+    }
+  }, [name, nim, prodi]);
+
+  useEffect(() => {
+    const onRestore = (e: Event) => {
+      const data = (e as CustomEvent<{ name?: string; nim?: string; prodi?: string }>).detail;
+      if (data?.name !== undefined) setName(data.name);
+      if (data?.nim !== undefined) setNim(data.nim);
+      if (data?.prodi !== undefined) setProdi(data.prodi);
+    };
+    window.addEventListener('mekatronika:restore-profile', onRestore);
+    return () => window.removeEventListener('mekatronika:restore-profile', onRestore);
+  }, []);
 
   const waitForCaptureLayout = async () => {
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
